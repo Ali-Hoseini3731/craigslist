@@ -1,34 +1,14 @@
-import requests
-from bs4 import BeautifulSoup
+import sys
 
-
-def get_page(craigslist_url):
-    try:
-        craigslist_response = requests.get(craigslist_url)
-    except:
-        return None
-    print(craigslist_response.status_code)
-    return craigslist_response
-
-
-def find_links(html_doc):
-    soup = BeautifulSoup(html_doc, "html.parser")
-    adv_list = soup.find_all("li", attrs={"class": "cl-static-search-result"})
-    all_links = []
-    for link in adv_list:
-        all_links.append(link.find("a").get("href"))
-    return all_links
-
-
-def start_crawl(craigslist_url):
-    response = get_page(craigslist_url)
-    links = find_links(response.text)
-    for link in links:
-        print(link)
-
-    print(len(links))
-
+from crawl import CrawlLinks, CrawlData
 
 if __name__ == "__main__":
-    url = "https://paris.craigslist.org/search/hhh?cc=gb&lang=en"
-    start_crawl(url)
+    cities = ["paris", "berlin"]
+    switch = sys.argv[1]
+
+    if switch == "find_links":
+        crawl_links = CrawlLinks(cities=cities)
+        crawl_links.start()
+    elif switch == "extract_pages":
+        crawl_data = CrawlData()
+        crawl_data.get_data_pages()

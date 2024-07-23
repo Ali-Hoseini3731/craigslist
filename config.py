@@ -1,0 +1,1 @@
+BASE_URL = "https://{}.craigslist.org/search/hhh?cc=gb&lang=en"
