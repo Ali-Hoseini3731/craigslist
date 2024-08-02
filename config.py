@@ -1,1 +1,1 @@
-BASE_URL = "https://{}.craigslist.org/search/hhh?cc=gb&lang=en"
+BASE_LINK = "https://{}.craigslist.org/search/hhh?cc=gb&lang=en"

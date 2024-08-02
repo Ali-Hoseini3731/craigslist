@@ -3,7 +3,11 @@ from bs4 import BeautifulSoup
 
 def parse_page(html_doc):
     soup = BeautifulSoup(html_doc, 'html.parser')
-    return soup.find("a", {"class", "brother"})
+    get_text = ""
+    for string in soup.strings:
+        get_text += string
+
+    return get_text
 
 
 if __name__ == "__main__":

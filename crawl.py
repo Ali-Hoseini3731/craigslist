@@ -4,33 +4,35 @@ from abc import ABC, abstractmethod
 import requests
 from bs4 import BeautifulSoup
 
-from config import BASE_URL
+from config import BASE_LINK
+from parser import AdvertisementPageParse
 
 
 class BaseCrawl(ABC):
     @abstractmethod
-    def start(self):
+    def start(self, *args):
         pass
 
     def store(self, data):
         pass
 
+    @staticmethod
+    def get(link):
+        try:
+            response = requests.get(link)
+        except requests.HTTPError:
+            return None
+        return response
+
 
 class CrawlLinks(BaseCrawl):
 
-    def __init__(self, cities, url=BASE_URL):
+    def __init__(self, cities, link=BASE_LINK):
         self.cities = cities
-        self.url = url
+        self.link = link
 
-    def get_page(self, url):
-        try:
-            response = requests.get(url)
-        except:
-            response = None
-        return response
-
-    def find_links(self, html_doc):
-
+    @staticmethod
+    def find_links(html_doc):
         soup = BeautifulSoup(html_doc, 'html.parser')
         li_list = soup.find_all("li", attrs={"class": "cl-static-search-result"})
         links = list()
@@ -38,33 +40,47 @@ class CrawlLinks(BaseCrawl):
             links.append(li.find("a").get("href"))
         return links
 
-    def start_crawl_city(self, url):
+    def start_crawl_city(self, link):
 
-        response = self.get_page(url)
+        response = self.get(link)
         links = self.find_links(response.text)
         return links
 
-    def start(self):
+    def start(self, store=False):
         adv_links = list()
 
         for city in self.cities:
-            links = self.start_crawl_city(self.url.format(city))
+            links = self.start_crawl_city(self.link.format(city))
             print(f"{city}: {len(links)}")
             adv_links.extend(links)
-
-        self.store(adv_links)
+        if store:
+            self.store(adv_links)
 
     def store(self, data):
-        with open("fixtures/data.json", "w") as f:
+        with open("fixtures/all_links.json", "w") as f:
             f.write(json.dumps(data))
 
 
 class CrawlData(BaseCrawl):
-    def start(self):
-        pass
+
+    def __init__(self):
+        self.links = self.__load_links()
+        self.parser = AdvertisementPageParse()
+
+    @staticmethod
+    def __load_links():
+        links = list()
+        with open("fixtures/all_links.json", "r") as f:
+            links = json.loads(f.read())
+        return links
+
+    def start(self, store=False):
+        for link in self.links:
+            response = self.get(link)
+            data = self.parser.parse(response.text)
+            if store:
+                self.store(data)
 
     def store(self, data):
-        pass
-
-    def get_data_pages(self):
-        print("hi Ali completes me")
+        with open(f"fixtures/data/{data['post_id']}.json", "w") as f:
+            f.write(json.dumps(data))
