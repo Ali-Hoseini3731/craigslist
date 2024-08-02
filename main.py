@@ -8,7 +8,7 @@ if __name__ == "__main__":
 
     if switch == "find_links":
         crawl_links = CrawlLinks(cities=cities)
-        crawl_links.start()
+        crawl_links.start(store=True)
     elif switch == "extract_pages":
         crawl_data = CrawlData()
-        crawl_data.get_data_pages()
+        crawl_data.start(store=True)
